@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Locations</title>
+    <script type="text/javascript">
+        function createLocation() {
+            var id = document.getElementById("location_id").value;
+            var name = document.getElementById("location_name").value;
+            var location = {
+                "id": parseInt(id),
+                "name": name
+            }
+
+            console.log("Start the POST");
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.open("POST", "http://localhost:8081/location");
+            xmlHttp.setRequestHeader("Content-Type", "application/json");
+            xmlHttp.onreadystatechange = function () {
+                console.log("ready state: ", this.status);
+                if (this.readyState == XMLHttpRequest.DONE && this.status == 200) {
+                    getLocations();
+                }
+            }
+            xmlHttp.send(JSON.stringify(location));
+            var id = document.getElementById("location_id").value = "";
+            var name = document.getElementById("location_name").value = "";
+        }
+
+        function updateLocation() {
+            var id = document.getElementById("location_id").value;
+            var name = document.getElementById("location_name").value;
+            var location = {
+                "id": id,
+                "name": name
+            }
+            //ajax
+            console.log("Starting the PUT");
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.open("PUT", "http://localhost:8081/location/" + id);
+            xmlHttp.setRequestHeader("Content-Type", "application/json");
+            xmlHttp.onreadystatechange = function () {
+                console.log("ready state: ", this.status);
+                if (this.readyState == XMLHttpRequest.DONE && this.status == 200) {
+                    console.log("success in posting location");
+                    getLocations();
+                }
+            }
+            xmlHttp.send(JSON.stringify(location));
+        }
+
+        function getLocations() {
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.onreadystatechange = function () {
+                if (this.readyState == XMLHttpRequest.DONE && this.status == 200) {
+                    var locations = JSON.parse(this.responseText);
+                    renderLocations(locations);
+                }
+            }
+            xmlHttp.open("GET", "http://localhost:8081/location/findAll", true);
+            xmlHttp.send();
+        }
+
+        function renderLocations(locations) {
+            var locTable = document.getElementById("tableArea");
+            locTable.innerHTML = "";
+            locTable +=
+                "<table>" +
+                "<tr>" +
+                "<th>ID</th>" +
+                "<th>Name</th></tr>"
+            for (var location of locations) {
+                var locHtml = "<tr><td>"
+                    + location.id + "</td><td>"
+                    + location.name + "</td></tr>";
+                locTable.innerHTML += locHtml;
+            }
+        }
+
+        function find() {
+            console.log("find");
+            var id = document.getElementById("find_id").value;
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.onreadystatechange = function () {
+                if (this.readyState == XMLHttpRequest.DONE && this.status == 200) {
+                    var location = JSON.parse(this.responseText);
+                    location_id.value = location.id;
+                    location_name.value = location.name;
+                }
+            }
+            xmlHttp.open("GET", "http://localhost:8081/location/" + id, true);
+            xmlHttp.send();
+        }
+
+        function deleteLocation() {
+            console.log("into delete");
+            var id = document.getElementById("find_id").value;
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.open("DELETE", "http://localhost:8081/location/" + id);
+            xmlHttp.setRequestHeader("Content-Type", "application/json");
+            xmlHttp.onreadystatechange = function () {
+                console.log("ready state: ", this.status);
+                if (this.readyState == XMLHttpRequest.DONE && this.status == 200) {
+                    console.log("success in posting location");
+                    getLocations();
+                }
+            }
+            xmlHttp.send(); //don't need to send
+        }
+
+        window.onload = function () {
+            getLocations();
+        }
+    </script>
+</head>
+<body>
+<nav>
+    <a href="http://localhost:8081/index.html">Characters</a>
+    <a href="http://localhost:8081/weapons.html">Weapons</a>
+    <a href="http://localhost:8081/locations.html">Locations</a>
+</nav>
+<div id="tableArea">
+</div>
+<div>
+    <label>id</label>
+    <input type="number" id="location_id"/>
+    <br/>
+    <label>Location Name: </label>
+    <input type="text" id="location_name"/>
+    <br/>
+    <button onclick="createLocation();">Add Location</button>
+    <button onclick="updateLocation();">Update Location</button>
+    id: &nbsp<input type="text" style="width: 20px;" id="find_id"/>
+    <button onclick="find();">Find</button>
+    <button onclick="deleteLocation();">Delete</button>
+</div>
+</body>
+</html>
